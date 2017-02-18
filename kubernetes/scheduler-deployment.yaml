@@ -1,0 +1,50 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: scheduler
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: scheduler
+    spec:
+      containers:
+      - args:
+        - scheduler
+        - -n
+        - "5"
+        env:
+        - name: LOAD_EX
+          value: "n"
+        - name: FERNET_KEY
+          value: 9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
+        - name: EXECUTOR
+          value: Local
+        image: puckel/docker-airflow
+        name: scheduler
+        resources: {}
+        volumeMounts:
+        - mountPath: /requirements.txt
+          name: scheduler-claim0
+          readOnly: true
+        - mountPath: /usr/local/airflow/dags
+          name: scheduler-claim1
+        - mountPath: /dojo
+          name: scheduler-claim2
+      restartPolicy: Always
+      volumes:
+      - name: scheduler-claim0
+        persistentVolumeClaim:
+          claimName: scheduler-claim0
+          readOnly: true
+      - name: scheduler-claim1
+        persistentVolumeClaim:
+          claimName: scheduler-claim1
+      - name: scheduler-claim2
+        persistentVolumeClaim:
+          claimName: scheduler-claim2
+status: {}

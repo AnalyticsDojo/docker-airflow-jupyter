@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: jupyter
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: jupyter
+    spec:
+      containers:
+      - args:
+        - start-notebook.sh
+        env:
+        - name: GRANT_SUDO
+          value: "yes"
+        image: jupyter/scipy-notebook
+        name: jupyter
+        ports:
+        - containerPort: 8888
+          protocol: TCP
+        resources: {}
+        volumeMounts:
+        - mountPath: /home/jovyan/work
+          name: jupyter-claim0
+        - mountPath: /dojo
+          name: jupyter-claim1
+      restartPolicy: Always
+      volumes:
+      - name: jupyter-claim0
+        persistentVolumeClaim:
+          claimName: jupyter-claim0
+      - name: jupyter-claim1
+        persistentVolumeClaim:
+          claimName: jupyter-claim1
+status: {}

@@ -1,0 +1,54 @@
+version: '2'
+services:
+    postgres:
+        image: postgres:9.6
+        restart: always
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+    webserver:
+        image: analyticsdojo/docker-airflow-jupyter 
+        restart: always
+        depends_on:
+            - postgres
+        environment:
+            - LOAD_EX=n
+            - EXECUTOR=Local
+            - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
+        volumes:
+           - ./dags:/usr/local/airflow/dags
+           - ./requirements.txt:/requirements.txt:ro
+           - ./:/dojo
+           
+        ports:
+            - "8080:8080"
+        command: webserver
+
+    scheduler:
+        image: analyticsdojo/docker-airflow-jupyter 
+        restart: always
+        depends_on:
+            - webserver
+        volumes:
+             - ./requirements.txt:/requirements.txt:ro
+             - ./dags:/usr/local/airflow/dags
+             - ./:/dojo
+        environment:
+            - LOAD_EX=n
+            - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
+            - EXECUTOR=Local
+        command: scheduler -n 5
+        
+    jupyter:
+        image: analyticsdojo/pyspark
+        restart: always
+        volumes:
+            - ./:/home/jovyan/work
+            - ./:/dojo
+        environment:
+            - GRANT_SUDO=yes
+        ports:
+            - "8888:8888"
+        command: start-notebook.sh
+
